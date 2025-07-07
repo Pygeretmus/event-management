@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     # Local apps
     "users",
+    "events",
 ]
 
 MIDDLEWARE = [
@@ -116,4 +118,8 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Event Management",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
 }
