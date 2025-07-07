@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     # 3-party apps
     "rest_framework",
     "drf_spectacular",
+    "rest_framework_simplejwt",
     # Local apps
     "users",
 ]
@@ -107,6 +108,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "event_management.exceptions.exception_handler",
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
 }
 
 SPECTACULAR_SETTINGS = {
