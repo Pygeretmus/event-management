@@ -18,6 +18,10 @@ class EventViewSet(viewsets.ModelViewSet):
     search_fields = ["title", "location", "organizer__username"]
     filterset_class = EventFilter
 
+    def get_filterset(self, *args, **kwargs):
+        kwargs["request"] = self.request
+        return super().get_filterset(*args, **kwargs)
+
     def get_permissions(self):
         if self.action in ("update", "partial_update", "destroy"):
             return [IsAuthenticated(), IsOrganizerOrReadOnly()]

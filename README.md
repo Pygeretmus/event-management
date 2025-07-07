@@ -28,7 +28,7 @@ cd event-management
 ### 2. Run with Docker
 
 ```bash
-docker-compose up --build
+docker-compose -f docker/docker-compose.yml up --build
 ```
 
 Visit the API at:  
@@ -95,6 +95,33 @@ GET /api/events/?start_date=2025-07-01T00:00:00Z&end_date=2025-07-31T23:59:59Z
 
 Filters events between the given date range.
 
+### Organized By Me Filtering
+
+```http
+GET /api/events/?organized_by_me=true
+```
+
+Filters events that created by the user.
+
+```http
+GET /api/events/?organized_by_me=false
+```
+
+Filters events that not created by the user.
+
+### Participated By Me Filtering
+
+```http
+GET /api/events/?participated_by_me=true
+```
+
+Filters events that participated by the user.
+
+```http
+GET /api/events/?participated_by_me=false
+```
+
+Filters events that not participated by the user.
 ---
 
 ## 📧 Email Notifications

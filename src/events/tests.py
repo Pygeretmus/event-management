@@ -87,7 +87,36 @@ class EventAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["title"], "Art Expo")
 
-    def test_create_event_authenticated_success(self):
+    def test_get_filter_organised_by_me_unauthenticated_success(self):
+        response = self.client.get(self.list_url + "?organized_by_me=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_get_filter_organised_by_me_success(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.list_url + "?organized_by_me=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["title"], "Music Fest")
+
+    def test_get_filter_participated_by_me_unauthenticated_success(self):
+        response = self.client.get(self.list_url + "?participated_by_me=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_get_filter_participated_by_me_success(self):
+        EventRegistration.objects.create(user=self.user1, event=self.event2)
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.list_url + "?participated_by_me=true")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["title"], "Art Expo")
+
+    def test_create_event_authenticated__success(self):
         self.client.force_authenticate(user=self.user1)
 
         data = {
