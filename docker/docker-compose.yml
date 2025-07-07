@@ -14,7 +14,7 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-      cd /app/event_management &&
+      cd /app/src &&
       python manage.py collectstatic --noinput &&
       python manage.py migrate &&
       python manage.py runserver 0.0.0.0:${DJANGO_PORT}"
