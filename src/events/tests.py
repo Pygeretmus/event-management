@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from events.models import Event
+from events.models import Event, EventRegistration
 
 User = get_user_model()
 
@@ -19,7 +19,6 @@ class EventAPITestCase(APITestCase):
         cls.user1 = User.objects.create_user(username="testuser1", email="test1@example.com", password="testpass123")
         cls.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="testpass123")
 
-        # Создаем тестовое событие
         cls.event1 = Event.objects.create(
             title="Test Event 1",
             description="Test Description 1",
@@ -192,3 +191,57 @@ class EventAPITestCase(APITestCase):
         response = self.client.delete(self.detail_url(1000))
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class EventRegistrationAPITestCase(APITestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user1 = User.objects.create_user(username="testuser1", email="test1@example.com", password="testpass123")
+        cls.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="testpass123")
+        cls.user3 = User.objects.create_user(username="testuser3", email="test3@example.com", password="testpass123")
+
+        cls.event = Event.objects.create(
+            title="Test Event 1",
+            description="Test Description 1",
+            date=timezone.now() + timedelta(days=7),
+            location="Test Location 1",
+            organizer=cls.user1,
+        )
+
+        EventRegistration.objects.create(user=cls.user3, event=cls.event)
+
+    def register_url(self, pk):
+        return reverse("event-register", kwargs={"pk": pk})
+
+    def test_register_organiser_fail(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.post(self.register_url(self.event.id))
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_register_user_success(self):
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.post(self.register_url(self.event.id))
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, {"detail": "Registration successful."})
+
+    def test_register_registered_user_fail(self):
+        self.client.force_authenticate(user=self.user3)
+        response = self.client.post(self.register_url(self.event.id))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data,
+            {
+                "message": "Validation error",
+                "errors": {"non_field_errors": "You are already registered for this event."},
+            },
+        )
+
+    def test_register_unauthorized_fail(self):
+        response = self.client.post(self.register_url(self.event.id))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
