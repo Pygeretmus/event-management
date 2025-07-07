@@ -104,12 +104,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "Radity.exceptions.exception_handler",
+    "EXCEPTION_HANDLER": "event_management.exceptions.exception_handler",
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Radity API",
-    "DESCRIPTION": "Estimation tool",
+    "TITLE": "Join to IT API",
+    "DESCRIPTION": "Event Management",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
