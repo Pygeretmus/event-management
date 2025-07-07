@@ -18,20 +18,20 @@ class EventAPITestCase(APITestCase):
         super().setUpClass()
         cls.user1 = User.objects.create_user(username="testuser1", email="test1@example.com", password="testpass123")
         cls.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="testpass123")
+        cls.now = timezone.now()
 
         cls.event1 = Event.objects.create(
-            title="Test Event 1",
-            description="Test Description 1",
-            date=timezone.now() + timedelta(days=7),
-            location="Test Location 1",
+            title="Music Fest",
+            description="Outdoor concert",
+            date=cls.now + timedelta(days=5),
+            location="New York",
             organizer=cls.user1,
         )
-
         cls.event2 = Event.objects.create(
-            title="Test Event 2",
-            description="Test Description 2",
-            date=timezone.now() + timedelta(days=14),
-            location="Test Location 2",
+            title="Art Expo",
+            description="Gallery exhibit",
+            date=cls.now + timedelta(days=10),
+            location="Paris",
             organizer=cls.user2,
         )
 
@@ -49,11 +49,42 @@ class EventAPITestCase(APITestCase):
 
     def test_get_event_list_authenticated_success(self):
         for user in [self.user1, self.user2]:
-            self.client.force_authenticate(user=self.user1)
+            self.client.force_authenticate(user=user)
             response = self.client.get(self.list_url)
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(len(response.data), 2)
+
+    def test_get_search_by_location_success(self):
+        response = self.client.get(self.list_url + "?search=paris")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["location"].lower(), "paris")
+
+    def test_get_search_by_title_success(self):
+        response = self.client.get(self.list_url + "?search=EXPO")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertIn("EXPO", response.data[0]["title"].upper())
+
+    def test_get_search_by_organizer_success(self):
+        response = self.client.get(self.list_url + f"?search={self.user1.username}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["organizer"], str(self.user1))
+
+    def test_get_filter_by_date_success(self):
+        start = (self.now + timedelta(days=6)).strftime("%Y-%m-%dT%H:%M:%S")
+        end = (self.now + timedelta(days=15)).strftime("%Y-%m-%dT%H:%M:%S")
+
+        response = self.client.get(self.list_url + f"?end_date={end}&start_date={start}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["title"], "Art Expo")
 
     def test_create_event_authenticated_success(self):
         self.client.force_authenticate(user=self.user1)
@@ -102,7 +133,7 @@ class EventAPITestCase(APITestCase):
         response = self.client.get(self.detail_url(self.event1.id))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["title"], "Test Event 1")
+        self.assertEqual(response.data["title"], "Music Fest")
         self.assertEqual(response.data["id"], self.event1.id)
 
     def test_get_non_existent_event_detail_fail(self):
@@ -154,7 +185,7 @@ class EventAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Partially Updated Title")
-        self.assertEqual(response.data["description"], "Test Description 1")
+        self.assertEqual(response.data["description"], "Outdoor concert")
 
     def test_partial_update_event_by_non_organizer_fail(self):
         self.client.force_authenticate(user=self.user2)

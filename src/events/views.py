@@ -1,8 +1,10 @@
-from rest_framework import status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from events.filters import EventFilter
 from events.models import Event
 from events.permissions import IsNotOrganizer, IsOrganizerOrReadOnly
 from events.serializers import EventRegistrationSerializer, EventSerializer
@@ -12,6 +14,9 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all().order_by("date")
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ["title", "location", "organizer__username"]
+    filterset_class = EventFilter
 
     def get_permissions(self):
         if self.action in ("update", "partial_update", "destroy"):
