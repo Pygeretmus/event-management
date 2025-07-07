@@ -17,12 +17,13 @@ services:
       cd /app/src &&
       python manage.py collectstatic --noinput &&
       python manage.py migrate &&
+      python manage.py test &&
       python manage.py runserver 0.0.0.0:${DJANGO_PORT}"
     healthcheck:
       test: /bin/bash -c "timeout 1 bash -c '</dev/tcp/localhost/${DJANGO_PORT}' 2>/dev/null"
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 100
 
 
   db:
