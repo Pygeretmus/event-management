@@ -36,4 +36,7 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         super().perform_create(serializer)
 
+        request.user.email_user(
+            subject="Event Registration", message=f"You have successfully registered for the {event.title} event"
+        )
         return Response({"detail": "Registration successful."}, status=status.HTTP_201_CREATED)

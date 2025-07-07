@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -252,12 +253,15 @@ class EventRegistrationAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_register_user_success(self):
+    @patch.object(User, "email_user")
+    def test_register_user_success(self, mock_email_user):
         self.client.force_authenticate(user=self.user2)
         response = self.client.post(self.register_url(self.event.id))
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, {"detail": "Registration successful."})
+
+        mock_email_user.assert_called_once()
 
     def test_register_registered_user_fail(self):
         self.client.force_authenticate(user=self.user3)
